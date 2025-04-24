@@ -1,1 +1,521 @@
-abc
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 代理程式新手指南 (視覺強化版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 使用 Inter 字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 基本標題樣式 */
+        h1, h2, h3 {
+            font-weight: 600; /* Semi-bold */
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            color: #111827; /* gray-900 */
+        }
+        h1 { font-size: 2.25rem; /* text-4xl */ line-height: 2.5rem; }
+        h2 { font-size: 1.875rem; /* text-3xl */ line-height: 2.25rem; }
+        h3 { font-size: 1.5rem; /* text-2xl */ line-height: 2rem; }
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            margin-top: 1em;
+            margin-bottom: 1em;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #e5e7eb; /* gray-200 */
+            padding: 0.75rem; /* p-3 */
+            text-align: left;
+            vertical-align: top; /* 垂直對齊頂部 */
+        }
+        th {
+            background-color: #f9fafb; /* gray-50 */
+            font-weight: 600;
+            color: #374151; /* gray-700 */
+        }
+        /* 列表樣式 */
+        ul, ol {
+            margin-left: 1.5rem; /* ml-6 */
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            list-style-position: outside;
+        }
+        li {
+            margin-bottom: 0.5rem; /* 增加列表項間距 */
+        }
+        /* 程式碼區塊樣式 */
+        pre {
+            background-color: #1f2937; /* gray-800 */
+            color: #d1d5db; /* gray-300 */
+            padding: 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            overflow-x: auto;
+            margin-top: 1em;
+            margin-bottom: 1em;
+            font-size: 0.875rem; /* text-sm */
+        }
+        code {
+             font-family: monospace;
+             color: #9ca3af; /* gray-400 */
+        }
+        /* 強調文字 */
+        strong {
+            font-weight: 600;
+            color: #1f2937; /* gray-800 */
+        }
+        /* 卡片樣式 */
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem; /* p-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .card-title {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600;
+            margin-bottom: 1rem; /* 增加標題下方間距 */
+            color: #111827; /* gray-900 */
+        }
+        /* 圖示樣式 */
+        .icon {
+            width: 1.5rem; /* w-6 */
+            height: 1.5rem; /* h-6 */
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.5rem; /* mr-2 */
+        }
+        .guardrail-icon {
+             width: 1rem; /* w-4 */
+             height: 1rem; /* h-4 */
+             display: inline-block;
+             vertical-align: middle;
+             margin-right: 0.25rem; /* mr-1 */
+        }
+        /* 流程圖樣式 */
+        .flowchart-step {
+            background-color: #eff6ff; /* blue-50 */
+            border: 1px solid #bfdbfe; /* blue-200 */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem; /* text-sm */
+            color: #1e40af; /* blue-800 */
+            position: relative; /* For arrows */
+        }
+        .flowchart-arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 1.5rem; /* h-6 */
+            margin-bottom: 0.5rem;
+        }
+         .flowchart-arrow svg {
+            width: 1rem; /* w-4 */
+            height: 1rem; /* h-4 */
+            color: #9ca3af; /* gray-400 */
+        }
+        /* Dashboard 元件樣式 */
+        .dashboard-metric {
+            background-color: #ecfdf5; /* green-50 */
+            border: 1px solid #a7f3d0; /* green-200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+         .dashboard-metric .value {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #065f46; /* green-800 */
+         }
+         .dashboard-metric .label {
+            font-size: 0.875rem; /* text-sm */
+            color: #047857; /* green-700 */
+            margin-top: 0.25rem;
+         }
+         /* Guardrail Infographic Specific Styles */
+         .guardrail-container {
+            position: relative;
+            padding: 2rem 1rem 3rem 1rem; /* Added padding bottom for intervention text */
+            border: 2px dashed #fca5a5; /* red-300 */
+            border-radius: 0.75rem; /* rounded-xl */
+            margin-top: 1rem;
+         }
+         .guardrail-core {
+            background-color: white;
+            padding: 0.75rem; /* p-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); /* shadow-sm */
+            text-align: center;
+            border: 1px solid #fecaca; /* red-200 */
+            margin-bottom: 1.5rem; /* mb-6 */
+            position: relative; /* Keep relative for stacking context */
+            z-index: 10; /* Ensure it's above the grid */
+         }
+         .guardrail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns */
+            gap: 0.75rem; /* gap-3 */
+         }
+         .guardrail-item {
+            background-color: #fee2e2; /* red-100 */
+            padding: 0.5rem 0.75rem; /* p-2 p-y-2 px-3 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.75rem; /* text-xs */
+            color: #991b1b; /* red-800 */
+            display: flex;
+            align-items: center;
+            border: 1px solid #fecaca; /* red-200 */
+         }
+         .guardrail-intervention {
+            position: absolute;
+            bottom: 1rem; /* Positioned at the bottom inside the container */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5; /* Below core, above container */
+         }
+         .guardrail-intervention-text {
+             font-size: 0.75rem; /* text-xs */
+             color: #b91c1c; /* red-700 */
+             background-color: white;
+             padding: 0.25rem 0.5rem; /* px-2 py-1 */
+             border-radius: 0.375rem; /* rounded-md */
+             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+             border: 1px solid #fecaca; /* red-200 */
+             margin-top: 0.25rem; /* mt-1 */
+             white-space: nowrap; /* Prevent wrapping */
+         }
+
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-indigo-700">🤖 AI 代理程式新手實用指南</h1>
+            <p class="text-xl text-gray-600 mt-3">輕鬆搞懂 AI Agent 核心概念與建構方式</p>
+        </header>
+
+        <nav class="mb-10 p-5 bg-indigo-50 rounded-xl border border-indigo-100">
+            <h3 class="text-xl font-semibold text-indigo-800 mb-4 flex items-center">
+                <svg class="icon text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+                快速導覽
+            </h3>
+            <ul class="list-none pl-0 grid grid-cols-2 gap-2">
+                <li><a href="#what-is-agent" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">什麼是代理程式？</a></li>
+                <li><a href="#when-to-build" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">何時建立代理程式？</a></li>
+                <li><a href="#design-foundations" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">設計基礎</a></li>
+                <li><a href="#orchestration" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">協作方式</a></li>
+                <li><a href="#guardrails" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">安全護欄</a></li>
+                <li><a href="#conclusion" class="block p-2 rounded text-indigo-700 hover:bg-indigo-100 transition duration-150">總結</a></li>
+            </ul>
+        </nav>
+
+        <section id="what-is-agent" class="mb-12">
+            <h2 class="flex items-center">
+                <svg class="icon text-blue-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L1.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+                </svg>
+                🤔 什麼是 AI 代理程式？
+            </h2>
+            <p class="mb-4 text-lg text-gray-700">想像一個能**獨立思考並行動**的數位助理，這就是 **AI 代理程式 (Agent)**！它不只簡化工作，更能**主動替你執行**複雜流程。</p>
+
+            <div class="card bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
+                <h4 class="card-title text-blue-800">代理程式核心組成 (Infographic)</h4>
+                <div class="flex flex-col md:flex-row items-center justify-around space-y-4 md:space-y-0 md:space-x-4">
+                    <div class="text-center p-4 bg-white rounded-lg shadow-md w-full md:w-1/3">
+                         <svg class="w-12 h-12 mx-auto text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" />
+                         </svg>
+                        <strong class="block font-semibold text-blue-700">🧠 模型 (LLM)</strong>
+                        <p class="text-sm text-gray-600">大腦：負責思考、決策</p>
+                    </div>
+                     <div class="hidden md:block text-gray-400 text-2xl font-light">+</div>
+                    <div class="text-center p-4 bg-white rounded-lg shadow-md w-full md:w-1/3">
+                         <svg class="w-12 h-12 mx-auto text-green-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+                         </svg>
+                        <strong class="block font-semibold text-green-700">🛠️ 工具 (Tools)</strong>
+                        <p class="text-sm text-gray-600">雙手：連接外部、執行動作</p>
+                    </div>
+                     <div class="hidden md:block text-gray-400 text-2xl font-light">+</div>
+                    <div class="text-center p-4 bg-white rounded-lg shadow-md w-full md:w-1/3">
+                        <svg class="w-12 h-12 mx-auto text-purple-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 12h9.75M10.5 18h9.75M3.75 6.75h1.5v9h-1.5z" />
+                        </svg>
+                        <strong class="block font-semibold text-purple-700">📜 指令 (Instructions)</strong>
+                        <p class="text-sm text-gray-600">規則書：定義行為、設限</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-sm text-gray-500 italic">**注意：** 簡單的聊天機器人或單任務 LLM 應用 ≠ 代理程式。</p>
+        </section>
+
+        <section id="when-to-build" class="mb-12">
+             <h2 class="flex items-center">
+                <svg class="icon text-teal-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
+                </svg>
+                🎯 什麼時候該建立代理程式？
+             </h2>
+            <p class="mb-6 text-lg text-gray-700">當傳統自動化方法不夠力時，代理程式就能派上用場。考慮以下「痛點」：</p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card hover:shadow-lg transition-shadow duration-200">
+                     <div class="flex items-center mb-3">
+                        <svg class="w-8 h-8 text-orange-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.25 2.25 0 0 0 21 18.75V16.5M11.42 15.17l3.75-3.75a1.125 1.125 0 0 1 1.59 0l.375.375a1.125 1.125 0 0 1 0 1.59l-3.75 3.75M11.42 15.17l-3.75-3.75a1.125 1.125 0 0 0-1.59 0l-.375.375a1.125 1.125 0 0 0 0 1.59l3.75 3.75m0-1.5-3.75 3.75a1.125 1.125 0 0 1-1.59 0L3 16.5a1.125 1.125 0 0 1 0-1.59l3.75-3.75m0 0L9 12.75M15 12.75l-3.75 3.75" />
+                        </svg>
+                        <h4 class="card-title !mb-0">🧩 複雜決策</h4>
+                     </div>
+                    <p class="text-gray-600">需要細膩判斷、處理例外、依賴情境。<br/> <span class="text-sm text-gray-500 italic">例如：客服審核特殊退款。</span></p>
+                </div>
+                <div class="card hover:shadow-lg transition-shadow duration-200">
+                     <div class="flex items-center mb-3">
+                         <svg class="w-8 h-8 text-red-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 15.75-2.489-2.489m0 0a3.375 3.375 0 1 0-4.773-4.773 3.375 3.375 0 0 0 4.774 4.774ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M16.06 16.06 18 18" /> </svg>
+                        <h4 class="card-title !mb-0">🕸️ 規則難維護</h4>
+                     </div>
+                    <p class="text-gray-600">規則庫龐大、複雜、修改困難且易錯。<br/> <span class="text-sm text-gray-500 italic">例如：供應商安全審查規則。</span></p>
+                </div>
+                <div class="card hover:shadow-lg transition-shadow duration-200">
+                     <div class="flex items-center mb-3">
+                         <svg class="w-8 h-8 text-cyan-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                         </svg>
+                        <h4 class="card-title !mb-0">📄 大量非結構化數據</h4>
+                     </div>
+                    <p class="text-gray-600">需理解自然語言、文件、對話內容。<br/> <span class="text-sm text-gray-500 italic">例如：處理保險理賠文件。</span></p>
+                </div>
+            </div>
+             <p class="mt-6 text-center text-sm text-gray-500 bg-gray-100 p-3 rounded-lg">💡 **建立前思考：** 這些痛點是否顯著？簡單規則是否真的無法解決？</p>
+        </section>
+
+        <section id="design-foundations" class="mb-12">
+             <h2 class="flex items-center">
+                <svg class="icon text-purple-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.5l2.25 1.313M12 7.5l-2.25 1.313M12 7.5V5.25m2.25 0l-2.25 1.313M14.25 5.25l2.25 1.313M18.75 7.5l-2.25-1.313m0 16.5l-2.25-1.313M18.75 19.5l-2.25-1.313M18.75 19.5V17.25m-13.5 0V19.5m-2.25-1.313l2.25-1.313M5.25 17.25l2.25-1.313M5.25 17.25V19.5" />
+                </svg>
+                🏗️ 代理程式設計基礎
+             </h2>
+            <p class="mb-4 text-lg text-gray-700">打造一個代理程式，你需要準備好這三大核心元件：</p>
+            <table class="table-auto shadow-sm">
+                <thead>
+                    <tr>
+                        <th class="w-1/3">元件 (Component)</th>
+                        <th>說明 (Description)</th>
+                        <th class="w-1/4">核心作用 (Role)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong class="text-blue-600 flex items-center"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z" /></svg>模型 (Model)</strong></td>
+                        <td>驅動代理程式的大型語言模型 (LLM)</td>
+                        <td>思考、推理、決策</td>
+                    </tr>
+                    <tr>
+                        <td><strong class="text-green-600 flex items-center"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" /></svg>工具 (Tools)</strong></td>
+                        <td>代理程式可用的外部功能或 API</td>
+                        <td>互動、獲取資訊、執行動作</td>
+                    </tr>
+                    <tr>
+                        <td><strong class="text-purple-600 flex items-center"><svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 12h9.75M10.5 18h9.75M3.75 6.75h1.5v9h-1.5z" /></svg>指令 (Instructions)</strong></td>
+                        <td>給代理程式的明確指南和行為準則</td>
+                        <td>定義行為、目標、限制</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="mt-8 grid md:grid-cols-3 gap-6">
+                <div class="card bg-blue-50 border-blue-100">
+                    <h3 class="text-xl font-semibold text-blue-800 !mt-0 !mb-3">1. 選擇模型</h3>
+                    <p class="text-blue-700">平衡能力、速度與成本。</p>
+                    <ul class="list-disc list-inside text-sm text-blue-600 mt-2 space-y-1">
+                        <li>用強模型定基準</li>
+                        <li>追求準確度</li>
+                        <li>用小模型優化</li>
+                    </ul>
+                </div>
+                 <div class="card bg-green-50 border-green-100">
+                    <h3 class="text-xl font-semibold text-green-800 !mt-0 !mb-3">2. 定義工具</h3>
+                    <p class="text-green-700">賦予代理程式行動力。</p>
+                     <ul class="list-disc list-inside text-sm text-green-600 mt-2 space-y-1">
+                        <li><strong class="font-medium">數據型：</strong> 獲取資訊</li>
+                        <li><strong class="font-medium">行動型：</strong> 執行操作</li>
+                        <li><strong class="font-medium">協作型：</strong> 呼叫同伴</li>
+                    </ul>
+                </div>
+                 <div class="card bg-purple-50 border-purple-100">
+                    <h3 class="text-xl font-semibold text-purple-800 !mt-0 !mb-3">3. 設定指令</h3>
+                    <p class="text-purple-700">引導代理程式正確行動。</p>
+                     <ul class="list-disc list-inside text-sm text-purple-600 mt-2 space-y-1">
+                        <li>清晰、無歧義</li>
+                        <li>拆解任務步驟</li>
+                        <li>定義具體行動</li>
+                        <li>涵蓋例外情況</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="orchestration" class="mb-12">
+             <h2 class="flex items-center">
+                <svg class="icon text-yellow-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 12h9.75M10.5 18h9.75M3.75 6.75h1.5v1.5h-1.5v-1.5Zm0 5.25h1.5v1.5h-1.5v-1.5Zm0 5.25h1.5v1.5h-1.5v-1.5Z" />
+                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5h.75m-.75 5.25h.75m-.75 5.25h.75" /> </svg>
+                🤝 代理程式的協作方式 (Orchestration)
+             </h2>
+            <p class="mb-6 text-lg text-gray-700">如何讓代理程式（們）有效率地合作完成任務？從簡單的開始：</p>
+
+            <div class="card mb-8">
+                <h3 class="text-xl font-semibold !mt-0 !mb-3 flex items-center">
+                    <svg class="icon text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 4.875 4.875 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.092 1.21-.138 2.43-.138 3.662a4.006 4.006 0 0 0 3.7 3.7 4.875 4.875 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7Zm-8.25 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 0-.75-.75.75.75 0 0 0 .75.75Z" />
+                    </svg>
+                    單一代理程式系統 (Single-Agent)
+                </h3>
+                <p class="text-gray-600">最常見的起點。一個代理程式處理所有事，透過增加工具來擴展能力。</p>
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg border">
+                    <div class="flowchart-step">用戶輸入</div>
+                    <div class="flowchart-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6.75-6.75M12 19.5l6.75-6.75" /></svg></div>
+                    <div class="flowchart-step">代理程式 (模型 + 指令)</div>
+                    <div class="flowchart-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h18" /></svg> (需要時) <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3 21 7.5m0 0L16.5 12M21 7.5H3" /></svg></div>
+                    <div class="flowchart-step">工具 (API, DB)</div>
+                     <div class="flowchart-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6.75-6.75M12 19.5l6.75-6.75" /></svg></div>
+                    <div class="flowchart-step">輸出/回覆</div>
+                </div>
+            </div>
+
+            <h3 class="mt-8 text-xl font-semibold">多代理程式系統 (Multi-Agent)</h3>
+            <p class="text-gray-600 mb-4">當任務太複雜，或工具太多太相似時，可以拆分成多個代理程式協作：</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="card border border-blue-200 hover:shadow-md transition-shadow">
+                    <h4 class="card-title text-blue-700 flex items-center">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        👨‍💼 管理員模式
+                    </h4>
+                    <p class="text-gray-600">一個中央「管理員」調度多個「專家」。</p>
+                    <pre><code class="text-xs">用戶 -> 管理員 --(呼叫工具)--> 專家A
+           ^                     |
+           |                     |
+           +-----(整合結果)------+
+           |
+           +--(呼叫工具)--> 專家B</code></pre>
+                </div>
+                 <div class="card border border-green-200 hover:shadow-md transition-shadow">
+                     <h4 class="card-title text-green-700 flex items-center">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 5.314 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                        </svg>
+                        🤝 去中心化模式
+                     </h4>
+                    <p class="text-gray-600">代理程式間平等「交接」任務。</p>
+                     <pre><code class="text-xs">用戶 -> Agent A --(交接)--> Agent B --(處理)--> 回覆
+                     </code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="guardrails" class="mb-12">
+             <h2 class="flex items-center">
+                 <svg class="icon text-red-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                 </svg>
+                🛡️ 安全護欄的重要性 (Guardrails)
+             </h2>
+            <p class="mb-6 text-lg text-gray-700">為代理程式設定「交通規則」，確保它不「開出界」，安全可靠地運行。</p>
+            <div class="card bg-red-50 border-red-200">
+                <h4 class="card-title text-red-800">多層次防禦 (Layered Defense)</h4>
+                <div class="guardrail-container">
+                    <div class="guardrail-core">
+                        <strong class="text-red-700">核心代理程式邏輯</strong>
+                    </div>
+                    <div class="guardrail-grid">
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>
+                            相關性檢查
+                        </div>
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z" /></svg>
+                            安全檢查 (防注入)
+                        </div>
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                            PII 過濾
+                        </div>
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            內容審核
+                        </div>
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.25 2.25 0 0 0 21 18.75V16.5M11.42 15.17l-.217-1.189a1.125 1.125 0 0 1 1.125-1.125h1.125a1.125 1.125 0 0 1 1.125 1.125v.217M11.42 15.17l2.472-2.472a1.125 1.125 0 0 0 0-1.59l-.53-.53a1.125 1.125 0 0 0-1.59 0l-2.472 2.472m1.125-1.125 1.125-1.125m0 0a1.125 1.125 0 0 1 1.59 0l.53.53a1.125 1.125 0 0 1 0 1.59l-1.125 1.125m-1.59 0a1.125 1.125 0 0 0-1.59 0l-.53.53a1.125 1.125 0 0 0 0 1.59l1.125 1.125m1.59 0-.53.53a1.125 1.125 0 0 0 0 1.59l.53.53a1.125 1.125 0 0 0 1.59 0l.53-.53a1.125 1.125 0 0 0 0-1.59l-1.125-1.125M3 4.5v15m18-15v15" /></svg>
+                            工具風險評估
+                        </div>
+                        <div class="guardrail-item">
+                            <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" /></svg>
+                            規則保護 (黑名單)
+                        </div>
+                         <div class="guardrail-item col-span-2"> {/* Span across 2 columns */}
+                             <svg class="guardrail-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" /></svg>
+                            輸出驗證 (品牌形象)
+                        </div>
+                    </div>
+                    <div class="guardrail-intervention">
+                        <svg class="w-6 h-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 12.75h.008v.008H12v-.008Z" />
+                        </svg>
+                        <span class="guardrail-intervention-text">必要時人工介入</span>
+                    </div>
+                </div>
+            </div>
+             <p class="mt-8 text-center text-gray-600">🚨 **關鍵：** 設計好人工介入機制，作為最終的安全網！</p>
+        </section>
+
+        <section id="conclusion" class="mb-8">
+             <h2 class="flex items-center">
+                 <svg class="icon text-indigo-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                 </svg>
+                🏁 總結與下一步
+             </h2>
+            <p class="mb-6 text-lg text-gray-700">AI 代理程式是強大的自動化工具，掌握好基礎就能發揮巨大潛力。</p>
+            <div class="card bg-indigo-50 border-indigo-100">
+                <h4 class="card-title text-indigo-800">成功關鍵 (Key Takeaways)</h4>
+                <ul class="list-disc list-inside text-indigo-700 space-y-2">
+                    <li><strong class="font-semibold">打好基礎：</strong> 好模型 + 好工具 + 好指令 = 成功的一半。</li>
+                    <li><strong class="font-semibold">選對模式：</strong> 從簡單開始，按需擴展協作方式。</li>
+                    <li><strong class="font-semibold">安全第一：</strong> 多層護欄 + 人工介入 = 可靠運行。</li>
+                    <li><strong class="font-semibold">持續迭代：</strong> 小步快跑，不斷測試、學習和改進。</li>
+                </ul>
+            </div>
+            <p class="mt-6 text-center text-gray-600">🚀 希望這份視覺化指南能助你啟程，打造你的第一個 AI 代理程式！</p>
+        </section>
+
+        <footer class="text-center mt-12 pt-8 border-t border-gray-300">
+            <p class="text-sm text-gray-500">視覺化指南基於 OpenAI《A practical guide to building agents》文件製作</p>
+            <p class="text-xs text-gray-400 mt-1">圖示和排版由 AI 輔助生成</p>
+        </footer>
+
+    </div>
+</body>
+</html>
